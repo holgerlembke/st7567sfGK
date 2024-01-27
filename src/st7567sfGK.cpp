@@ -65,8 +65,8 @@ void st7567sfGK::mode(bool on) {  // else off
 //**************************************************************************************************************************************
 void st7567sfGK::writebasic(uint8_t mode, uint8_t commandordata) {
     Wire.beginTransmission(devaddr);  // p 22/68
-    Wire.write(mode);  // Control byte: C0 = 0 (=last command), A0 = 0
-                       // (=following is command)
+    // Control byte: C0 = 0 (=last command), A0 = 0 (=following is command)
+    Wire.write(mode);
     Wire.write(commandordata);
     uint8_t error = Wire.endTransmission();
     if (error != 0) {
@@ -186,7 +186,7 @@ bool st7567sfGK::readdatabyte(uint8_t x, uint8_t p,
 
 //**************************************************************************************************************************************
 void st7567sfGK::writedatabyte(uint8_t x, uint8_t p, uint8_t data) {
-    if ((cache.p == p) && (cache.x == x) && (cache.data == data)) {
+    if ((cache.x == x) && (cache.p == p) && (cache.data == data)) {
         return;
     }
 
@@ -205,7 +205,6 @@ void st7567sfGK::clear(bool clear) {
     cache.x = cacheuninit;
 
     int page = 0;
-    int column = 0;
     int pageAddr = 0xb0;
     byte d = clear ? 0 : 0xff;
 
@@ -215,7 +214,7 @@ void st7567sfGK::clear(bool clear) {
         writecommand(pageAddr);
         writecommand(0x10);
         writecommand(0x00);
-        for (column = 0; column < 128; column++) {
+        for (uint8_t column = 0; column < 128; column++) {
             writedata(d);
         }
         pageAddr++;
@@ -258,14 +257,13 @@ void st7567sfGK::line(int x0, int y0, int x1, int y1, bool clear) {
     int dy = abs(y1 - y0);
     int sy = y0 < y1 ? 1 : -1;
     int err = (dx > dy ? dx : -dy) / 2;
-    int e2;
 
     for (;;) {
         subpixel(x0, y0, clear);
         if (x0 == x1 && y0 == y1) {
             break;
         }
-        e2 = err;
+        int e2 = err;
         if (e2 > -dx) {
             err -= dy;
             x0 += sx;
@@ -313,18 +311,79 @@ uint8_t st7567sfGK::reverse(uint8_t b) {
 }
 
 //**************************************************************************************************************************************
-void st7567sfGK::writefont(char c, bool clear) {
+// this is slow but allows to put text at any pixel position.
+void st7567sfGK::writechar(uint8_t& x, uint8_t& y, char c, bool clear) {
+    uint8_t f[7];
     for (uint8_t i = 0; i < 7; i++) {
-        if (clear) {
-            writedata(reverse(pgm_read_word_near((font_7x8[c] + i))) ^ 0xff);
-        } else {
-            writedata(reverse(pgm_read_word_near((font_7x8[c] + i))));
+        f[i] = pgm_read_word_near(font_7x8[c] + i);
+    }
+
+    for (uint8_t i = 0; i < 7; i++) {
+        // inner loop uses y to optimize cache
+        for (uint8_t j = 0; j < 8; j++) {
+            if (f[i] % 2 == 1) {
+                subpixel(x + i, y + 8 - j, clear);
+            } else {
+                subpixel(x + i, y + 8 - j, !clear);
+            }
+            f[i] >>= 1;
         }
     }
+    x += 7;
 }
 
 //**************************************************************************************************************************************
 uint8_t st7567sfGK::text(uint8_t x, uint8_t y, bool clear, const char* str) {
+    for (int i = 0; i < strlen(str); i++) {
+        if ((str[i] >= '0') && (str[i] <= '9')) {
+            writechar(x, y, str[i] - '0', clear);
+        } else if ((str[i] >= 'a') && (str[i] <= 'z')) {
+            writechar(x, y, str[i] - 'a' + 10, clear);
+        } else if ((str[i] >= 'A') && (str[i] <= 'Z')) {
+            writechar(x, y, str[i] - 'A' + 36, clear);
+        } else {
+            switch (str[i]) {
+                case '!': writechar(x, y, 62, clear); break;  // ..
+                case '"': writechar(x, y, 63, clear); break;
+                case '#': writechar(x, y, 64, clear); break;
+                case '$': writechar(x, y, 65, clear); break;
+                case '%': writechar(x, y, 66, clear); break;
+                case '&': writechar(x, y, 67, clear); break;
+                case '\'': writechar(x, y, 68, clear); break;
+                case '(': writechar(x, y, 69, clear); break;
+                case ')': writechar(x, y, 70, clear); break;
+                case '*': writechar(x, y, 71, clear); break;
+                case '+': writechar(x, y, 72, clear); break;
+                case ',': writechar(x, y, 73, clear); break;
+                case '-': writechar(x, y, 74, clear); break;
+                case '/': writechar(x, y, 75, clear); break;
+                case ':': writechar(x, y, 76, clear); break;
+                case ';': writechar(x, y, 77, clear); break;
+                case '<': writechar(x, y, 78, clear); break;
+                case '=': writechar(x, y, 79, clear); break;
+                case '>': writechar(x, y, 80, clear); break;
+                case '?': writechar(x, y, 81, clear); break;
+                case '@': writechar(x, y, 82, clear); break;
+                case '{': writechar(x, y, 83, clear); break;
+                case '|': writechar(x, y, 84, clear); break;
+                case '}': writechar(x, y, 85, clear); break;
+                case '~': writechar(x, y, 86, clear); break;
+                case ' ': writechar(x, y, 87, clear); break;
+                case '.': writechar(x, y, 88, clear); break;
+                case '^': writechar(x, y, 89, clear); break;
+                case '_': writechar(x, y, 90, clear); break;
+                case '`': writechar(x, y, 91, clear); break;
+                case '[': writechar(x, y, 92, clear); break;
+                case '\\': writechar(x, y, 93, clear); break;
+                case ']': writechar(x, y, 94, clear); break;
+            }
+        }
+    }
+
+    return y + 9;
+}
+
+/*
     uint8_t p = y >> 3;  // pages with 8 bit
 
     writecommand(0xb0 + p);
@@ -333,51 +392,51 @@ uint8_t st7567sfGK::text(uint8_t x, uint8_t y, bool clear, const char* str) {
 
     for (int i = 0; i < strlen(str); i++) {
         if ((str[i] >= '0') && (str[i] <= '9')) {
-            writefont(str[i] - '0', clear);
+            writechar(x, y,str[i] - '0', clear);
         } else if ((str[i] >= 'a') && (str[i] <= 'z')) {
-            writefont(str[i] - 'a' + 10, clear);
+            writechar(x, y,str[i] - 'a' + 10, clear);
         } else if ((str[i] >= 'A') && (str[i] <= 'Z')) {
-            writefont(str[i] - 'A' + 36, clear);
+            writechar(x, y,str[i] - 'A' + 36, clear);
         } else {
             switch (str[i]) {
-                case '!': writefont(62, clear); break;  // ..
-                case '"': writefont(63, clear); break;
-                case '#': writefont(64, clear); break;
-                case '$': writefont(65, clear); break;
-                case '%': writefont(66, clear); break;
-                case '&': writefont(67, clear); break;
-                case '\'': writefont(68, clear); break;
-                case '(': writefont(69, clear); break;
-                case ')': writefont(70, clear); break;
-                case '*': writefont(71, clear); break;
-                case '+': writefont(72, clear); break;
-                case ',': writefont(73, clear); break;
-                case '-': writefont(74, clear); break;
-                case '/': writefont(75, clear); break;
-                case ':': writefont(76, clear); break;
-                case ';': writefont(77, clear); break;
-                case '<': writefont(78, clear); break;
-                case '=': writefont(79, clear); break;
-                case '>': writefont(80, clear); break;
-                case '?': writefont(81, clear); break;
-                case '@': writefont(82, clear); break;
-                case '{': writefont(83, clear); break;
-                case '|': writefont(84, clear); break;
-                case '}': writefont(85, clear); break;
-                case '~': writefont(86, clear); break;
-                case ' ': writefont(87, clear); break;
-                case '.': writefont(88, clear); break;
-                case '^': writefont(89, clear); break;
-                case '_': writefont(90, clear); break;
-                case '`': writefont(91, clear); break;
-                case '[': writefont(92, clear); break;
-                case '\\': writefont(93, clear); break;
-                case ']': writefont(94, clear); break;
+                case '!': writechar(x, y,62, clear); break;  // ..
+                case '"': writechar(x, y,63, clear); break;
+                case '#': writechar(x, y,64, clear); break;
+                case '$': writechar(x, y,65, clear); break;
+                case '%': writechar(x, y,66, clear); break;
+                case '&': writechar(x, y,67, clear); break;
+                case '\'': writechar(x, y,68, clear); break;
+                case '(': writechar(x, y,69, clear); break;
+                case ')': writechar(x, y,70, clear); break;
+                case '*': writechar(x, y,71, clear); break;
+                case '+': writechar(x, y,72, clear); break;
+                case ',': writechar(x, y,73, clear); break;
+                case '-': writechar(x, y,74, clear); break;
+                case '/': writechar(x, y,75, clear); break;
+                case ':': writechar(x, y,76, clear); break;
+                case ';': writechar(x, y,77, clear); break;
+                case '<': writechar(x, y,78, clear); break;
+                case '=': writechar(x, y,79, clear); break;
+                case '>': writechar(x, y,80, clear); break;
+                case '?': writechar(x, y,81, clear); break;
+                case '@': writechar(x, y,82, clear); break;
+                case '{': writechar(x, y,83, clear); break;
+                case '|': writechar(x, y,84, clear); break;
+                case '}': writechar(x, y,85, clear); break;
+                case '~': writechar(x, y,86, clear); break;
+                case ' ': writechar(x, y,87, clear); break;
+                case '.': writechar(x, y,88, clear); break;
+                case '^': writechar(x, y,89, clear); break;
+                case '_': writechar(x, y,90, clear); break;
+                case '`': writechar(x, y,91, clear); break;
+                case '[': writechar(x, y,92, clear); break;
+                case '\\': writechar(x, y,93, clear); break;
+                case ']': writechar(x, y,94, clear); break;
             }
         }
     }
 
     return y + 9;
-}
+*/
 
 //.

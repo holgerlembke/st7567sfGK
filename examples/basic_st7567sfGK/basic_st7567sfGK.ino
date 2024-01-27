@@ -30,7 +30,7 @@ void setup() {
   display.begin();
 }
 
-void simplecross() {
+void simple() {
   static bool seti = false;
 
   display.clear(!seti);
@@ -44,7 +44,19 @@ void simplecross() {
   display.line(0, 0, 127, 63, seti);
   display.line(0, 63, 127, 0, seti);
 
-  display.circle(40, 40, 38, seti, false);
+  // one circle lower left edge
+  display.circle(20, 20, 20, seti, false);
+
+  // two circles lower left edge
+  display.circle(127-10, 63-10, 10, seti, false);
+  display.circle(127-30, 63-10, 10, seti, false);
+
+  // lower right edge, just inside the outer boy
+  display.text(127-3*7-1, 1, seti, "ABC");
+
+  // upper left edge, just inside the outer boy
+  display.text(1, 62-8, seti, "012");
+
 
   delay(4000);
   seti = !seti;
@@ -138,8 +150,8 @@ void texttest() {
 
 
 void loop() {
-  // simplecross();
+  simple();
   // fillcircletest();
   // lueteeDemo();
-  texttest();
+  // texttest();
 }

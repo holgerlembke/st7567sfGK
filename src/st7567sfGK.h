@@ -61,6 +61,8 @@
      Alt-Shft-F
 
      History
+      + 0.3.12
+        - text output now at any pixel position
       + 0.3.11
         - fixed ibrary.properties name     
      ´+ 0.3.10
@@ -118,7 +120,7 @@ class st7567sfGK {
     // same as pixel but no range check
     void subpixel(int x, int y, bool clear);
 
-    void writefont(char c, bool clear);
+    void writechar(uint8_t &x, uint8_t &y, char c, bool clear);
     uint8_t reverse(uint8_t b);
 };
 
