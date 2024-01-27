@@ -59,6 +59,13 @@
        -- flip display
 
      Alt-Shft-F
+
+     History
+      + 0.3.11
+        - fixed ibrary.properties name     
+     ´+ 0.3.10
+        - publish
+
 */
 #include <Arduino.h>
 
