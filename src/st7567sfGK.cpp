@@ -223,6 +223,11 @@ void st7567sfGK::clear(bool clear) {
 
 //**************************************************************************************************************************************
 void st7567sfGK::subpixel(int x, int y, bool clear) {
+    if (rotate180mode) {
+        x = 127-x;
+        y = 63-y;
+    }
+
     uint8_t p = y >> 3;  // pages with 8 bit
     uint8_t mask = 1 << (y % 8);
 
@@ -382,61 +387,5 @@ uint8_t st7567sfGK::text(uint8_t x, uint8_t y, bool clear, const char* str) {
 
     return y + 9;
 }
-
-/*
-    uint8_t p = y >> 3;  // pages with 8 bit
-
-    writecommand(0xb0 + p);
-    writecommand(0x10 + (x >> 4));  // Set Column Address
-    writecommand(x % 16);           // Set Column Address
-
-    for (int i = 0; i < strlen(str); i++) {
-        if ((str[i] >= '0') && (str[i] <= '9')) {
-            writechar(x, y,str[i] - '0', clear);
-        } else if ((str[i] >= 'a') && (str[i] <= 'z')) {
-            writechar(x, y,str[i] - 'a' + 10, clear);
-        } else if ((str[i] >= 'A') && (str[i] <= 'Z')) {
-            writechar(x, y,str[i] - 'A' + 36, clear);
-        } else {
-            switch (str[i]) {
-                case '!': writechar(x, y,62, clear); break;  // ..
-                case '"': writechar(x, y,63, clear); break;
-                case '#': writechar(x, y,64, clear); break;
-                case '$': writechar(x, y,65, clear); break;
-                case '%': writechar(x, y,66, clear); break;
-                case '&': writechar(x, y,67, clear); break;
-                case '\'': writechar(x, y,68, clear); break;
-                case '(': writechar(x, y,69, clear); break;
-                case ')': writechar(x, y,70, clear); break;
-                case '*': writechar(x, y,71, clear); break;
-                case '+': writechar(x, y,72, clear); break;
-                case ',': writechar(x, y,73, clear); break;
-                case '-': writechar(x, y,74, clear); break;
-                case '/': writechar(x, y,75, clear); break;
-                case ':': writechar(x, y,76, clear); break;
-                case ';': writechar(x, y,77, clear); break;
-                case '<': writechar(x, y,78, clear); break;
-                case '=': writechar(x, y,79, clear); break;
-                case '>': writechar(x, y,80, clear); break;
-                case '?': writechar(x, y,81, clear); break;
-                case '@': writechar(x, y,82, clear); break;
-                case '{': writechar(x, y,83, clear); break;
-                case '|': writechar(x, y,84, clear); break;
-                case '}': writechar(x, y,85, clear); break;
-                case '~': writechar(x, y,86, clear); break;
-                case ' ': writechar(x, y,87, clear); break;
-                case '.': writechar(x, y,88, clear); break;
-                case '^': writechar(x, y,89, clear); break;
-                case '_': writechar(x, y,90, clear); break;
-                case '`': writechar(x, y,91, clear); break;
-                case '[': writechar(x, y,92, clear); break;
-                case '\\': writechar(x, y,93, clear); break;
-                case ']': writechar(x, y,94, clear); break;
-            }
-        }
-    }
-
-    return y + 9;
-*/
 
 //.

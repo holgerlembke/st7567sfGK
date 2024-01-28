@@ -4,8 +4,8 @@ This is a st7567s (132X65 Dot Matrix LCD Controller/Drive) i2c lib for the Ardui
 
 It works
 
-* simple and with little memory usage,
 * with 128 x 64 liquid cristal displays in black/white,
+* simple and with little memory usage,
 * with I2C,
 * with 3.3 volts ESP32 and ESP8266,
 * very good with Zener-Diode-modified boards and
@@ -18,6 +18,7 @@ as with other libraries, but they are still there.
 ```
     void constrast(uint8_t value); // 0x00 .. 0x3f
     void mode(bool on);
+    void rotatedisplay(bool rotate180);
 
     void clear(bool clear);
     void pixel(int x, int y, bool clear);

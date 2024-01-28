@@ -1,7 +1,7 @@
 #ifndef st7567sfGK_h
 #define st7567sfGK_h
 /*
-     st7567s for Generation Klick
+     st7567s (128 x 64 monochrome display) for Generation Klick
 
      st7567s (132X65 Dot Matrix LCD Controller/Drive) i2c lib for the Arduino
    ecosystem.
@@ -57,10 +57,13 @@
 
      pendig work:
        -- flip display
+       -- move to ..\libraries\Adafruit_GFX_Library\Fonts ??
 
      Alt-Shft-F
 
      History
+      + 0.3.13
+        - add rotate180
       + 0.3.12
         - text output now at any pixel position
       + 0.3.11
@@ -86,6 +89,7 @@ class st7567sfGK {
 
     void constrast(uint8_t value);  // 0x00 .. 0x3f
     void mode(bool on);
+    void rotatedisplay(bool rotate180) { rotate180mode=rotate180; };
 
     void clear(bool clear);
     void pixel(int x, int y, bool clear);
@@ -110,6 +114,7 @@ class st7567sfGK {
 
     // Controls that some things are almost a recursion. Almost.
     bool rlock = false;
+    bool rotate180mode = false;
 
     void writebasic(uint8_t mode, uint8_t commandordata);
     void writecommand(uint8_t command);
@@ -117,7 +122,7 @@ class st7567sfGK {
     bool readdatabyte(uint8_t x, uint8_t p,
                       uint8_t& data);  // data is referenced.
     void writedatabyte(uint8_t x, uint8_t p, uint8_t data);
-    // same as pixel but no range check
+    // same as pixel() but no range check
     void subpixel(int x, int y, bool clear);
 
     void writechar(uint8_t &x, uint8_t &y, char c, bool clear);
