@@ -62,6 +62,8 @@
      Alt-Shft-F
 
      History
+      + 0.3.15
+        - removed the prints...
       + 0.3.14
         - fixed checkrange()
       + 0.3.13

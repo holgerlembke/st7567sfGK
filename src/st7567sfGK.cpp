@@ -265,15 +265,6 @@ void st7567sfGK::line(int x0, int y0, int x1, int y1, bool clear) {
     if ((!checkrange(x0, y0)) || (!checkrange(x1, y1))) {
         return;
     }
-    Serial.print("x0: ");
-    Serial.print(x0);
-    Serial.print(" y0: ");
-    Serial.print(y0);
-    Serial.print(" x1: ");
-    Serial.print(x1);
-    Serial.print(" y1: ");
-    Serial.print(y1);
-    Serial.println();
 
     int dx = abs(x1 - x0);
     int sx = x0 < x1 ? 1 : -1;
