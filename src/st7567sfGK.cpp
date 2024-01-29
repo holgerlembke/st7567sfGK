@@ -7,8 +7,8 @@
 #define st7567sfGKshowpanics
 
 // Hlpr
-static inline bool checkrange(uint8_t x, uint8_t y) {
-    return (x < 128) && (y < 64);
+static inline bool checkrange(int x, int y) {
+    return (x >= 0) && (x < 128) && (y < 64) && (y >= 0);
 }
 
 //**************************************************************************************************************************************
@@ -59,6 +59,13 @@ void st7567sfGK::mode(bool on) {  // else off
     } else {
         writecommand(0xAE);
     }
+}
+
+//**************************************************************************************************************************************
+//**************************************************************************************************************************************
+void st7567sfGK::rotatedisplay(bool rotate180) {
+    rotate180mode = rotate180;
+    cache.x = cacheuninit;
 }
 
 //**************************************************************************************************************************************
@@ -223,9 +230,11 @@ void st7567sfGK::clear(bool clear) {
 
 //**************************************************************************************************************************************
 void st7567sfGK::subpixel(int x, int y, bool clear) {
+    // because everything uses the subpixel(), all we do is implement rotation
+    // here.
     if (rotate180mode) {
-        x = 127-x;
-        y = 63-y;
+        x = 127 - x;
+        y = 63 - y;
     }
 
     uint8_t p = y >> 3;  // pages with 8 bit
@@ -256,6 +265,15 @@ void st7567sfGK::line(int x0, int y0, int x1, int y1, bool clear) {
     if ((!checkrange(x0, y0)) || (!checkrange(x1, y1))) {
         return;
     }
+    Serial.print("x0: ");
+    Serial.print(x0);
+    Serial.print(" y0: ");
+    Serial.print(y0);
+    Serial.print(" x1: ");
+    Serial.print(x1);
+    Serial.print(" y1: ");
+    Serial.print(y1);
+    Serial.println();
 
     int dx = abs(x1 - x0);
     int sx = x0 < x1 ? 1 : -1;
@@ -304,15 +322,6 @@ void st7567sfGK::circle(int xm, int ym, int r, bool clear, bool solid) {
     if (solid) {
         line(xm, ym + y, xm, ym - y, clear);
     }
-}
-
-//**************************************************************************************************************************************
-// we need this late if screen flipping is implemented
-uint8_t st7567sfGK::reverse(uint8_t b) {
-    b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
-    b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
-    b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
-    return b;
 }
 
 //**************************************************************************************************************************************

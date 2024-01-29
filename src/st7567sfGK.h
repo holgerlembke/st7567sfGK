@@ -62,8 +62,11 @@
      Alt-Shft-F
 
      History
+      + 0.3.14
+        - fixed checkrange()
       + 0.3.13
         - add rotate180
+        - rotate resets cache
       + 0.3.12
         - text output now at any pixel position
       + 0.3.11
@@ -89,7 +92,7 @@ class st7567sfGK {
 
     void constrast(uint8_t value);  // 0x00 .. 0x3f
     void mode(bool on);
-    void rotatedisplay(bool rotate180) { rotate180mode=rotate180; };
+    void rotatedisplay(bool rotate180);
 
     void clear(bool clear);
     void pixel(int x, int y, bool clear);
@@ -126,7 +129,6 @@ class st7567sfGK {
     void subpixel(int x, int y, bool clear);
 
     void writechar(uint8_t &x, uint8_t &y, char c, bool clear);
-    uint8_t reverse(uint8_t b);
 };
 
 #endif
