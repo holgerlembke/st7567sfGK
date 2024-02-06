@@ -23,8 +23,14 @@ as with other libraries, but they are still there.
     void line(int x0, int y0, int x1, int y1, bool clear);
     void circle(int xm, int ym, int r, bool clear, bool solid);
 
+    // depricated
     uint8_t text(uint8_t x, uint8_t y, const char* str);
     uint8_t text(uint8_t x, uint8_t y, String s);
+
+    // Print like Serial.
+    print()...
+    println()...
+    void setCursor(uint8_t x, uint8_t y);
 ```
 
 It does *not* use a buffer. It uses a 1-byte read/write cache.

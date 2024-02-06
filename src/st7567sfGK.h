@@ -56,12 +56,13 @@
      remove D2 + D1. #1 and #6 from the right, small black blobs.
 
      pendig work:
-       -- flip display
        -- move to ..\libraries\Adafruit_GFX_Library\Fonts ??
 
      Alt-Shft-F
 
      History
+      + 0.4.1
+        - derive from Print-class to have the .print()/.println() interface
       + 0.3.15
         - removed the prints...
       + 0.3.14
@@ -72,15 +73,18 @@
       + 0.3.12
         - text output now at any pixel position
       + 0.3.11
-        - fixed ibrary.properties name     
+        - fixed ibrary.properties name
      ´+ 0.3.10
         - publish
 
 */
 #include <Arduino.h>
+#include <Print.h>
 
-class st7567sfGK {
+class st7567sfGK : public Print {
    public:  //---------
+    using Print::write;
+
     // false+true for colors...
     static constexpr uint8_t colorblack = 1;
     static constexpr uint8_t colorwhite = 0;
@@ -101,17 +105,22 @@ class st7567sfGK {
     void line(int x0, int y0, int x1, int y1, bool clear);
     void circle(int xm, int ym, int r, bool clear, bool solid);
 
+    // Depricated. Please use the .print()/.println() interface
     // Font size is fixed 7x8 pixels, returns next line y-pos
     uint8_t text(uint8_t x, uint8_t y, bool clear, const char* str);
     uint8_t text(uint8_t x, uint8_t y, bool clear, String s) {
         return text(x, y, clear, s.c_str());
     }
 
-   private: //---------
+    void setCursor(uint8_t x, uint8_t y) {
+        cursorpos.x = x;
+        cursorpos.y = y;
+    };
+   private:                  //---------
     uint8_t devaddr = 0x3f;  // can be 0x3c to 0x3f  p 22/68
 
-    // read/write-Cache. Works in y-direction, so it is a better idea to walk y
-    // first.
+    // 1-Byte-read/write-Cache. Works in y-direction, so it is a better idea to
+    // walk y first.
     static constexpr uint8_t cacheuninit = 0xff;
     struct c_t {
         uint8_t x = cacheuninit, p, data;
@@ -130,7 +139,12 @@ class st7567sfGK {
     // same as pixel() but no range check
     void subpixel(int x, int y, bool clear);
 
-    void writechar(uint8_t &x, uint8_t &y, char c, bool clear);
+    struct cursorpos_t {
+        uint8_t x;
+        uint8_t y;
+    } cursorpos;
+    void writechar(uint8_t& x, uint8_t& y, char c, bool clear);
+    virtual size_t write(uint8_t);
 };
 
 #endif

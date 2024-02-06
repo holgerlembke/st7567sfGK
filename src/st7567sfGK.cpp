@@ -40,7 +40,7 @@ void st7567sfGK::reset() {
     mode(true);
     writecommand(0x40);  // start line adresse = 0x00
 
-    clear(false);
+    clear(colorblack);
 }
 
 //**************************************************************************************************************************************
@@ -226,6 +226,9 @@ void st7567sfGK::clear(bool clear) {
         }
         pageAddr++;
     }
+
+    cursorpos.x = 0;
+    cursorpos.y = 0;
 }
 
 //**************************************************************************************************************************************
@@ -316,8 +319,67 @@ void st7567sfGK::circle(int xm, int ym, int r, bool clear, bool solid) {
 }
 
 //**************************************************************************************************************************************
+uint8_t st7567sfGK::text(uint8_t x, uint8_t y, bool clear, const char* str) {
+    for (int i = 0; i < strlen(str); i++) {
+        writechar(x, y, str[i], clear);
+    }
+    return y + 8;
+}
+
+//**************************************************************************************************************************************
 // this is slow but allows to put text at any pixel position.
+// might move to ..\libraries\Adafruit_GFX_Library\Fonts
 void st7567sfGK::writechar(uint8_t& x, uint8_t& y, char c, bool clear) {
+    if (c == 0x0d) {  // cr \r
+        cursorpos.x = 0;
+        return;
+    } else if (c == 0x0a) {  // lf \n
+        cursorpos.y += 8;
+        return;
+    } else if ((c >= '0') && (c <= '9')) {
+        c = c - '0';
+    } else if ((c >= 'a') && (c <= 'z')) {
+        c = c - 'a' + 10;
+    } else if ((c >= 'A') && (c <= 'Z')) {
+        c = c - 'A' + 36;
+    } else {
+        switch (c) {
+            case '!': c = 62; break;  // ..
+            case '"': c = 63; break;
+            case '#': c = 64; break;
+            case '$': c = 65; break;
+            case '%': c = 66; break;
+            case '&': c = 67; break;
+            case '\'': c = 68; break;
+            case '(': c = 69; break;
+            case ')': c = 70; break;
+            case '*': c = 71; break;
+            case '+': c = 72; break;
+            case ',': c = 73; break;
+            case '-': c = 74; break;
+            case '/': c = 75; break;
+            case ':': c = 76; break;
+            case ';': c = 77; break;
+            case '<': c = 78; break;
+            case '=': c = 79; break;
+            case '>': c = 80; break;
+            case '?': c = 81; break;
+            case '@': c = 82; break;
+            case '{': c = 83; break;
+            case '|': c = 84; break;
+            case '}': c = 85; break;
+            case '~': c = 86; break;
+            case ' ': c = 87; break;
+            case '.': c = 88; break;
+            case '^': c = 89; break;
+            case '_': c = 90; break;
+            case '`': c = 91; break;
+            case '[': c = 92; break;
+            case '\\': c = 93; break;
+            case ']': c = 94; break;
+        }
+    }
+
     uint8_t f[7];
     for (uint8_t i = 0; i < 7; i++) {
         f[i] = pgm_read_word_near(font_7x8[c] + i);
@@ -338,54 +400,9 @@ void st7567sfGK::writechar(uint8_t& x, uint8_t& y, char c, bool clear) {
 }
 
 //**************************************************************************************************************************************
-uint8_t st7567sfGK::text(uint8_t x, uint8_t y, bool clear, const char* str) {
-    for (int i = 0; i < strlen(str); i++) {
-        if ((str[i] >= '0') && (str[i] <= '9')) {
-            writechar(x, y, str[i] - '0', clear);
-        } else if ((str[i] >= 'a') && (str[i] <= 'z')) {
-            writechar(x, y, str[i] - 'a' + 10, clear);
-        } else if ((str[i] >= 'A') && (str[i] <= 'Z')) {
-            writechar(x, y, str[i] - 'A' + 36, clear);
-        } else {
-            switch (str[i]) {
-                case '!': writechar(x, y, 62, clear); break;  // ..
-                case '"': writechar(x, y, 63, clear); break;
-                case '#': writechar(x, y, 64, clear); break;
-                case '$': writechar(x, y, 65, clear); break;
-                case '%': writechar(x, y, 66, clear); break;
-                case '&': writechar(x, y, 67, clear); break;
-                case '\'': writechar(x, y, 68, clear); break;
-                case '(': writechar(x, y, 69, clear); break;
-                case ')': writechar(x, y, 70, clear); break;
-                case '*': writechar(x, y, 71, clear); break;
-                case '+': writechar(x, y, 72, clear); break;
-                case ',': writechar(x, y, 73, clear); break;
-                case '-': writechar(x, y, 74, clear); break;
-                case '/': writechar(x, y, 75, clear); break;
-                case ':': writechar(x, y, 76, clear); break;
-                case ';': writechar(x, y, 77, clear); break;
-                case '<': writechar(x, y, 78, clear); break;
-                case '=': writechar(x, y, 79, clear); break;
-                case '>': writechar(x, y, 80, clear); break;
-                case '?': writechar(x, y, 81, clear); break;
-                case '@': writechar(x, y, 82, clear); break;
-                case '{': writechar(x, y, 83, clear); break;
-                case '|': writechar(x, y, 84, clear); break;
-                case '}': writechar(x, y, 85, clear); break;
-                case '~': writechar(x, y, 86, clear); break;
-                case ' ': writechar(x, y, 87, clear); break;
-                case '.': writechar(x, y, 88, clear); break;
-                case '^': writechar(x, y, 89, clear); break;
-                case '_': writechar(x, y, 90, clear); break;
-                case '`': writechar(x, y, 91, clear); break;
-                case '[': writechar(x, y, 92, clear); break;
-                case '\\': writechar(x, y, 93, clear); break;
-                case ']': writechar(x, y, 94, clear); break;
-            }
-        }
-    }
-
-    return y + 9;
+inline size_t st7567sfGK::write(uint8_t value) {
+    writechar(cursorpos.x, cursorpos.y, value, colorwhite);
+    return 1;  // assume sucess
 }
 
 //.
