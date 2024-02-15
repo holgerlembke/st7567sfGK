@@ -11,7 +11,7 @@
 Screen layout:
     0/0 is bottom left, x goes left to right, y bottom to top
 
-    Text lines flow from top to bottom or bottom to top.
+    Text lines flow from top to bottom (y=56 to 0) or bottom to top (y=0 to 56). 
     texts overflows, if end reached.
 
  Why this was made
@@ -62,15 +62,14 @@ Screen layout:
 
      remove D2 + D1. #1 and #6 from the right, small black blobs.
 
+     pendig work:
+       -- move to ..\libraries\Adafruit_GFX_Library\Fonts ??
+
+     Alt-Shft-F
+
      History
-      + 0.4.3
-        - cache extended to write-cache with dirty, begincache()/endcache(),
-          only used for text output
-        - st7567sfGKAdafruit: adds Adafruit-Fonts to st7567sfGK class
-      + 0.4.2
-        - Split into (at least for now) two classes.
-          st7567sfGKBase: has all the drawing stuff and a simple text output
-          st7567sfGK: adds all the .print()/.println() goodness from Print-class
+      + 0.4.???
+        - text-draw-modus toptobottom/bottomtotop
       + 0.4.1
         - derive from Print-class to have the .print()/.println() interface
       + 0.3.15
@@ -90,10 +89,11 @@ Screen layout:
 */
 #include <Arduino.h>
 #include <Print.h>
-#include <gfxfont.h>
 
-class st7567sfGKBase {
+class st7567sfGK : public Print {
    public:  //---------
+    using Print::write;
+
     // false+true for colors...
     static constexpr uint8_t colorblack = 1;
     static constexpr uint8_t colorwhite = 0;
@@ -121,11 +121,22 @@ class st7567sfGKBase {
     uint8_t text(uint8_t x, uint8_t y, bool clear, String s) {
         return text(x, y, clear, s.c_str());
     }
+
+    void setCursor(uint8_t x, uint8_t y) {
+        textinfo.x = x;
+        textinfo.y = y;
+    };
     void textflow(textflow_t flow);
 
-   private:  //---------
-    enum kommentfixerdings { nur_______________ };
+   private:                  //---------
     uint8_t devaddr = 0x3f;  // can be 0x3c to 0x3f  p 22/68
+
+    // 1-Byte-read/write-Cache. Works in y-direction, so it is a better idea to
+    // walk y first.
+    static constexpr uint8_t cacheuninit = 0xff;
+    struct c_t {
+        uint8_t x = cacheuninit, p, data;
+    } cache;
 
     // Controls that some things are almost a recursion. Almost.
     bool rlock = false;
@@ -137,76 +148,17 @@ class st7567sfGKBase {
     bool readdatabyte(uint8_t x, uint8_t p,
                       uint8_t& data);  // data is referenced.
     void writedatabyte(uint8_t x, uint8_t p, uint8_t data);
-    void writedatabyteForced(uint8_t x, uint8_t p, uint8_t data);
-
-   protected:  //---------
-    // 1-Byte-read/write-Cache. Works in y-direction, so it is a better idea to
-    // walk y first.
-    // will it be any more better with begincache/endcache/dirty algo?
-    static constexpr uint8_t cacheuninit = 0xff;
-    struct c_t {
-        uint8_t x = cacheuninit, p, data, level, dirty;
-    } cache;
-    void begincache();
-    void endcache();
-
-    static constexpr uint8_t uninit = 255;
-    // weil die Fonts anders funktionieren: Standardfont von unten nach oben,
-    // Adafruit von oben nach unten
-    uint8_t tfofs = 8;
     // same as pixel() but no range check
     void subpixel(int x, int y, bool clear);
-    void writechar(uint8_t& x, uint8_t& y, char c, bool clear);
+
     struct textinfo_t {
         uint8_t x;
         uint8_t y;
-        uint8_t totalheight = uninit;  // die gesamte höhe des fonts
-        uint8_t height;  // die höhe bis zur baseline, totalheight-height sind
-                         // die pixel unter der baseline
-        int8_t xofs = 0;
-        int8_t yofs = 0;
         textflow_t tf;
     } textinfo;
-};
-
-// multiple inheritance scares the shit out of me.
-// https://www.youtube.com/watch?v=xTWrk4L97d8
-class st7567sfGK : public st7567sfGKBase, public Print {
-   public:  //---------
-    using Print::write;
-    void setCursor(uint8_t x, uint8_t y) {
-        textinfo.x = x;
-        textinfo.y = y;
-    };
-
-   private:  //---------
+    void writechar(uint8_t& x, uint8_t& y, char c, bool clear);
     virtual size_t write(uint8_t);
 };
 
-// Working wiht Adafruit-Fonts
-class st7567sfGKAdafruit : public st7567sfGKBase, public Print {
-   public:  //---------
-    st7567sfGKAdafruit() { tfofs = 0; }
-    using Print::write;
-    void setCursor(uint8_t x, uint8_t y) {
-        textinfo.x = x;
-        textinfo.y = y;
-    };
-    void setFont(const GFXfont* f = NULL);
-    // for "larger" fonts, the spacing can be reduced. Use (-1,-1) or so. Try
-    // and error.
-    void setFontOffset(int8_t x, int8_t y) {
-        textinfo.xofs = x;
-        textinfo.yofs = y;
-    }
-
-   protected:
-   private:  //---------
-    GFXfont* gfxFont;
-    void writecharAF(uint8_t& x, uint8_t& y, char c, bool clear);
-    virtual size_t write(uint8_t);
-};
-// btw. great font customizer:
-// https://tchapi.github.io/Adafruit-GFX-Font-Customiser/
 
 #endif

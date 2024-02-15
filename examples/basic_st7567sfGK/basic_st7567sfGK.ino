@@ -22,12 +22,16 @@ void setup() {
   Serial.print(__TIME__);
   Serial.println();
 
+  // st7567sfGK sometimes will hang if µC is resetet at the "right" moment
+  I2C_ClearBus(PinSDA, PinSCL);
+
   // Adapt this to your needs. st7567s can Fast Mode/400 kHz i2c Bus speed
   Wire.begin(PinSDA, PinSCL, 400000);
   // Wire.begin();
   // Wire.begin(400000);
 
   display.begin();
+  display.rotatedisplay(true);
 }
 
 void simple() {
@@ -48,14 +52,14 @@ void simple() {
   display.circle(20, 20, 20, seti, false);
 
   // two circles lower left edge
-  display.circle(127-10, 63-10, 10, seti, false);
-  display.circle(127-30, 63-10, 10, seti, false);
+  display.circle(127 - 10, 63 - 10, 10, seti, false);
+  display.circle(127 - 30, 63 - 10, 10, seti, false);
 
   // lower right edge, just inside the outer boy
-  display.text(127-3*7-1, 1, seti, "ABC");
+  display.text(127 - 3 * 7 - 1, 1, seti, "ABC");
 
   // upper left edge, just inside the outer boy
-  display.text(1, 62-8, seti, "012");
+  display.text(1, 62 - 8, seti, "012");
 
 
   delay(4000);
@@ -148,10 +152,33 @@ void texttest() {
   delay(5000);
 }
 
+void clocktest() {
+  for (int i = 45; i < 60; i++) {
+    clockface(11, i);
+    delay(2000);
+  }
+}
+
+void stringtest() {
+  display.textflow(st7567sfGK::toptobottom);
+  display.clear(st7567sfGK::colorblack);
+  display.line(0, 0, 50, 50, st7567sfGK::colorwhite);
+
+
+  display.print("Hallo");
+  display.println("xx");
+  display.println("0334524");
+  display.println("abcdefgh");
+}
 
 void loop() {
-  simple();
+  // simple();
   // fillcircletest();
   // lueteeDemo();
   // texttest();
+  // clocktest();
+  stringtest();
+  delay(8000);
 }
+
+//

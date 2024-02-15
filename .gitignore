@@ -9,5 +9,6 @@ notizen.txt
 # yeah. live is hard.
 *.cmd
 .vscode
+.development
 makeESPFMfGKdeflate
 !postbuild.cmd
