@@ -6,7 +6,7 @@
  * date: 2020-12-4
  * URL: https://github.com/mworkfun/ST7567A_128X32DOT_LCD
  ****************************/
-#include <avr/pgmspace.h> 
+#include <Arduino.h>
 
 const uint8_t font_7x8[95][7] PROGMEM = {
   {0x00,0x3E,0x51,0x49,0x45,0x3E,0x00},     //0= '0'

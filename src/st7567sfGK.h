@@ -63,6 +63,9 @@ Screen layout:
      remove D2 + D1. #1 and #6 from the right, small black blobs.
 
      History
+      + 0.4.4
+        - font.cpp replaced reference to <avr/pgmspace.h> with <Arduino.h>
+        - added "virtual ~st7567sfGKAdafruit();" to satisfy stm32 arm compiler
       + 0.4.3
         - cache extended to write-cache with dirty, begincache()/endcache(),
           only used for text output
@@ -187,6 +190,7 @@ class st7567sfGK : public st7567sfGKBase, public Print {
 class st7567sfGKAdafruit : public st7567sfGKBase, public Print {
    public:  //---------
     st7567sfGKAdafruit() { tfofs = 0; }
+    virtual ~st7567sfGKAdafruit();
     using Print::write;
     void setCursor(uint8_t x, uint8_t y) {
         textinfo.x = x;
