@@ -63,6 +63,10 @@ Screen layout:
      remove D2 + D1. #1 and #6 from the right, small black blobs.
 
      History
+      + 0.4.5
+        - removed "virtual ~st7567sfGKAdafruit();" added in 0.4.4
+        - removed inline from both virtual functions write(uint8_t value)
+          (https://github.com/holgerlembke/st7567sfGK/issues/1)
       + 0.4.4
         - font.cpp replaced reference to <avr/pgmspace.h> with <Arduino.h>
         - added "virtual ~st7567sfGKAdafruit();" to satisfy stm32 arm compiler
@@ -190,7 +194,6 @@ class st7567sfGK : public st7567sfGKBase, public Print {
 class st7567sfGKAdafruit : public st7567sfGKBase, public Print {
    public:  //---------
     st7567sfGKAdafruit() { tfofs = 0; }
-    virtual ~st7567sfGKAdafruit();
     using Print::write;
     void setCursor(uint8_t x, uint8_t y) {
         textinfo.x = x;
