@@ -181,6 +181,7 @@ class st7567sfGKBase {
 class st7567sfGK : public st7567sfGKBase, public Print {
    public:  //---------
     using Print::write;
+    // sets the bottom left corner for the following print command
     void setCursor(uint8_t x, uint8_t y) {
         textinfo.x = x;
         textinfo.y = y;
@@ -190,7 +191,7 @@ class st7567sfGK : public st7567sfGKBase, public Print {
     virtual size_t write(uint8_t);
 };
 
-// Working wiht Adafruit-Fonts
+// Working with Adafruit-Fonts
 class st7567sfGKAdafruit : public st7567sfGKBase, public Print {
    public:  //---------
     st7567sfGKAdafruit() { tfofs = 0; }
