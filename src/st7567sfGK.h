@@ -181,7 +181,7 @@ class st7567sfGKBase {
 class st7567sfGK : public st7567sfGKBase, public Print {
    public:  //---------
     using Print::write;
-    // sets the bottom left corner for the following print command
+    // sets the bottom left pixel corner for the following print command
     void setCursor(uint8_t x, uint8_t y) {
         textinfo.x = x;
         textinfo.y = y;
